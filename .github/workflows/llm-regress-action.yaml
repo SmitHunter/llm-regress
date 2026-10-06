@@ -1,0 +1,151 @@
+# Example GitHub Action for using LLM Regress in your own repository
+#
+# Copy this file to your repo's .github/workflows/ directory and customize:
+# 1. Update the path to your test suites
+# 2. Configure your provider (e.g., add OPENAI_API_KEY secret for real LLM testing)
+# 3. Adjust comparison baseline strategy for your workflow
+#
+# This example shows:
+# - Running prompt tests on PRs
+# - Comparing against a baseline from main branch
+# - Posting results as PR comments
+# - Failing CI on regressions
+
+name: Prompt Regression Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  LLM_REGRESS_CACHE_DIR: .llm-regress-cache
+
+jobs:
+  prompt-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install llm-regress
+        run: pip install "llm-regress @ git+https://github.com/SmitHunter/llm-regress.git"
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.LLM_REGRESS_CACHE_DIR }}
+          key: llm-regress-${{ hashFiles('tests/prompts/**/*.yaml') }}
+          restore-keys: llm-regress-
+
+      - name: Run prompt tests
+        id: tests
+        run: |
+          llm-regress run tests/prompts/ \
+            --cache-dir $LLM_REGRESS_CACHE_DIR \
+            --save-run current-run.json \
+            --output report.html
+        env:
+          # For real LLM testing, add secrets:
+          # OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PROVIDER: mock
+
+      - name: Download baseline (main branch)
+        if: github.event_name == 'pull_request'
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: llm-regress-action.yaml
+          branch: main
+          name: prompt-test-baseline
+          path: baseline/
+        continue-on-error: true
+
+      - name: Compare with baseline
+        if: github.event_name == 'pull_request' && hashFiles('baseline/run.json') != ''
+        id: compare
+        run: |
+          llm-regress compare baseline/run.json current-run.json \
+            --output comparison.json || echo "has_regressions=true" >> $GITHUB_OUTPUT
+
+      - name: Save baseline for main
+        if: github.ref == 'refs/heads/main'
+        run: cp current-run.json run.json
+
+      - name: Upload baseline artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: prompt-test-baseline
+          path: run.json
+          retention-days: 90
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prompt-test-report
+          path: |
+            report.html
+            current-run.json
+            comparison.json
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let body = '## 🧪 Prompt Test Results\n\n';
+            
+            try {
+              const results = JSON.parse(fs.readFileSync('current-run.json', 'utf8'));
+              const passed = results.passed ? '✅ PASSED' : '❌ FAILED';
+              body += `**Status:** ${passed}\n\n`;
+              body += `| Metric | Value |\n|--------|-------|\n`;
+              body += `| Total Tests | ${results.total_tests} |\n`;
+              body += `| Passed | ${results.passed_tests} |\n`;
+              body += `| Failed | ${results.failed_tests} |\n`;
+              body += `| Duration | ${results.duration_ms.toFixed(0)}ms |\n\n`;
+              
+              if (fs.existsSync('comparison.json')) {
+                const comparison = JSON.parse(fs.readFileSync('comparison.json', 'utf8'));
+                if (comparison.has_regressions) {
+                  body += `⚠️ **${comparison.total_regressions} regression(s) detected**\n\n`;
+                } else if (comparison.total_improvements > 0) {
+                  body += `🎉 **${comparison.total_improvements} improvement(s)**\n\n`;
+                }
+              }
+            } catch (e) {
+              body += `⚠️ Could not parse test results: ${e.message}\n`;
+            }
+            
+            body += '\n<details><summary>View full report</summary>\n\n';
+            body += 'Download the `prompt-test-report` artifact for detailed HTML report.\n\n';
+            body += '</details>';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Fail on regressions
+        if: steps.compare.outputs.has_regressions == 'true'
+        run: |
+          echo "Prompt regressions detected! See comparison.json for details."
+          exit 1

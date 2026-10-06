@@ -1,0 +1,37 @@
+name: Template Variables Suite
+description: Tests using Jinja2 template variables
+provider: mock
+
+defaults:
+  language: Python
+  style: concise
+
+tests:
+  - name: Country capital with template
+    description: Test template variable substitution
+    prompt: What is the capital of {{ country }}?
+    inputs:
+      country: Australia
+    assertions:
+      - type: contains
+        value: Canberra
+
+  - name: Code generation with defaults
+    description: Use default template variables
+    prompt: Write a {{ style }} {{ language }} function that returns 42
+    assertions:
+      - type: contains
+        value: "def"
+      - type: contains
+        value: "42"
+
+  - name: Override defaults
+    description: Override default variables with code prompt
+    prompt: Write code in {{ language }} that returns 42
+    inputs:
+      language: JavaScript
+    assertions:
+      - type: contains
+        value: "def"
+    tags:
+      - code-generation

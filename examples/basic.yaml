@@ -1,0 +1,27 @@
+name: Basic Examples
+description: Simple test cases demonstrating core llm-regress features
+provider: mock
+
+tests:
+  - name: Capital city question
+    description: Test that the model knows basic geography
+    prompt: What is the capital of France?
+    assertions:
+      - type: contains
+        value: Paris
+
+  - name: List generation
+    description: Check that model can generate lists
+    prompt: List three items.
+    assertions:
+      - type: contains
+        value: "1."
+      - type: contains
+        value: "2."
+
+  - name: Summary generation
+    description: Check summary capabilities
+    prompt: Summarize the following in one sentence.
+    assertions:
+      - type: contains
+        value: Summary

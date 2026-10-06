@@ -1,0 +1,26 @@
+name: LLM Judge Suite
+description: Tests using LLM-as-judge evaluation
+provider: mock
+
+tests:
+  - name: Helpful explanation
+    description: Use LLM to judge helpfulness
+    prompt: Explain what recursion is in programming
+    assertions:
+      - type: contains
+        value: explanation
+      - type: llm_judge
+        rubric: |
+          The response should provide some kind of explanation.
+
+  - name: Code quality check
+    description: Judge code quality with rubric
+    prompt: Write a Python function to calculate factorial
+    assertions:
+      - type: contains
+        value: "def"
+      - type: llm_judge
+        rubric: |
+          The code should look like Python code.
+    tags:
+      - code-quality

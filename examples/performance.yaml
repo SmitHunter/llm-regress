@@ -1,0 +1,36 @@
+name: Performance Budget Suite
+description: Tests with latency and cost constraints
+provider:
+  name: mock
+  model: mock-model-v1
+  options:
+    latency_ms: 25
+
+tests:
+  - name: Fast response required
+    description: Response must be under 100ms
+    prompt: Say hello
+    assertions:
+      - type: contains
+        value: Mock
+      - type: latency_budget
+        budget_ms: 100
+
+  - name: Budget-friendly query
+    description: Response must be cost-effective
+    prompt: Brief answer please
+    assertions:
+      - type: cost_budget
+        budget_dollars: 0.001
+
+  - name: Combined performance check
+    description: Both fast and cheap
+    prompt: Quick and cheap response
+    assertions:
+      - type: latency_budget
+        budget_ms: 500
+      - type: cost_budget
+        budget_dollars: 0.01
+    tags:
+      - performance
+      - critical

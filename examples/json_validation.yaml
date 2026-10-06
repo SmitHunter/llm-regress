@@ -1,0 +1,39 @@
+name: JSON Validation Suite
+description: Tests for structured JSON output
+provider: mock
+
+tests:
+  - name: Valid JSON object
+    description: Verify model returns valid JSON
+    prompt: Return a JSON object with status field set to "success"
+    assertions:
+      - type: json_schema
+        schema:
+          type: object
+          required:
+            - status
+          properties:
+            status:
+              type: string
+              enum: [success, error]
+
+  - name: Complex JSON structure
+    description: Test complex nested JSON
+    prompt: Return JSON with a "result" number and "items" array
+    assertions:
+      - type: json_schema
+        schema:
+          type: object
+          required:
+            - status
+            - result
+            - items
+          properties:
+            status:
+              type: string
+            result:
+              type: integer
+            items:
+              type: array
+              items:
+                type: string
