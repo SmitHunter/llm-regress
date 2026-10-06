@@ -47,13 +47,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.LLM_REGRESS_CACHE_DIR }}
-          key: llm-regress-${{ hashFiles('tests/prompts/**/*.yaml') }}
+          key: llm-regress-${{ hashFiles('examples/**/*.yaml') }}
           restore-keys: llm-regress-
 
       - name: Run prompt tests
         id: tests
         run: |
-          llm-regress run tests/prompts/ \
+          llm-regress run examples/ \
             --cache-dir $LLM_REGRESS_CACHE_DIR \
             --save-run current-run.json \
             --output report.html
