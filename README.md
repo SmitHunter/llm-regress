@@ -7,6 +7,10 @@
 
 **Regression testing for LLM prompts and models, designed for CI pipelines.**
 
+![Passing mock-provider run of examples/basic.yaml, then an assertion change (Paris to Lyon) that fails, then llm-regress compare reporting REGRESSIONS DETECTED and exit code 1](docs/hero.gif)
+
+Recorded from a real mock-provider run of a copy of `examples/basic.yaml`. Tape: [`docs/hero.tape`](docs/hero.tape). Re-record with `./docs/record-hero.sh`.
+
 LLM Regress helps teams catch prompt regressions before they reach production. Define test suites in YAML, run them locally or in CI, and get clear reports on what changed between model versions, prompt iterations, or configuration changes.
 
 ## Why LLM Regress?
