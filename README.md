@@ -256,11 +256,11 @@ If `model` is omitted, OpenAI uses `gpt-6-luna` and Anthropic uses `claude-haiku
 ```mermaid
 flowchart LR
     Y[YAML suites] --> R[Async runner]
-    R --> P[Provider<br/>OpenAI · Anthropic · Mock]
+    R --> P[Provider - OpenAI, Anthropic, Mock]
     R --> C[(Response cache)]
-    P --> A[Assertions<br/>exact · contains · regex · JSON schema<br/>similarity · LLM judge · latency/cost]
+    P --> A[Assertions - exact, contains, regex, JSON schema, similarity, LLM judge, latency/cost]
     A --> Res[Run results]
-    Res --> Rep[Reporters<br/>terminal · JSON · HTML]
+    Res --> Rep[Reporters - terminal, JSON, HTML]
     Res --> Cmp[compare: exit 1 on regression]
 ```
 
