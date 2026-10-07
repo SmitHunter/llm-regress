@@ -3,7 +3,6 @@
 [![CI](https://github.com/SmitHunter/llm-regress/actions/workflows/ci.yaml/badge.svg)](https://github.com/SmitHunter/llm-regress/actions/workflows/ci.yaml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
 **Regression testing for LLM prompts and models, designed for CI pipelines.**
 
@@ -326,4 +325,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-Built with ❤️ by [Hunter Smith](https://github.com/SmitHunter)
+Built by **Hunter Smith**, AI Engineer, Melbourne · [GitHub](https://github.com/SmitHunter) · [LinkedIn](https://www.linkedin.com/in/hunter-sm/)
