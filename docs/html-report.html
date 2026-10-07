@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Regress Test Report</title>
+    <style>
+        :root {
+            --green: #22c55e;
+            --red: #ef4444;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { font-size: 2rem; margin-bottom: 1rem; }
+        .summary {
+            background: var(--surface);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        .stat { text-align: center; }
+        .stat-value { font-size: 2rem; font-weight: bold; }
+        .stat-label { color: var(--muted); font-size: 0.875rem; }
+        .status { padding: 0.5rem 1rem; border-radius: 4px; display: inline-block; }
+        .status.passed { background: var(--green); color: white; }
+        .status.failed { background: var(--red); color: white; }
+        .suite { background: var(--surface); border-radius: 8px; margin-bottom: 1rem; overflow: hidden; }
+        .suite h2 { padding: 1rem; border-bottom: 1px solid var(--bg); font-size: 1.1rem; }
+        .suite h2.passed { border-left: 4px solid var(--green); }
+        .suite h2.failed { border-left: 4px solid var(--red); }
+        .stats { color: var(--muted); font-weight: normal; font-size: 0.9rem; }
+        .tests { padding: 0.5rem; }
+        .test { padding: 0.75rem 1rem; border-radius: 4px; margin: 0.25rem 0; }
+        .test.passed { background: rgba(34, 197, 94, 0.1); }
+        .test.failed { background: rgba(239, 68, 68, 0.1); }
+        .test-header { display: flex; justify-content: space-between; align-items: center; }
+        .duration { color: var(--muted); font-size: 0.875rem; }
+        .assertions { margin-top: 0.5rem; padding-left: 1.5rem; }
+        .assertion { font-size: 0.875rem; color: var(--muted); padding: 0.25rem 0; }
+        .assertion.passed { color: var(--green); }
+        .assertion.failed { color: var(--red); }
+        .type { font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LLM Regress Test Report</h1>
+
+        <div class="summary">
+            <div class="stat">
+                <div class="stat-value status failed">FAILED</div>
+                <div class="stat-label">Overall Status</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">3</div>
+                <div class="stat-label">Total Tests</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" style="color: var(--green)">2</div>
+                <div class="stat-label">Passed</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" style="color: var(--red)">1</div>
+                <div class="stat-label">Failed</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">14ms</div>
+                <div class="stat-label">Duration</div>
+            </div>
+        </div>
+
+        
+            <div class="suite">
+                <h2 class="failed">
+                    ✗ Basic Examples
+                    <span class="stats">(2/3 passed)</span>
+                </h2>
+                <div class="tests">
+            
+                <div class="test failed">
+                    <div class="test-header">
+                        ✗ Capital city question
+                        <span class="duration">14ms</span>
+                    </div>
+                    <div class="assertions">
+                    <div class="assertion failed">
+                        <span class="type">contains</span>: Output does not contain 'Lyon'
+                    </div>
+                    </div>
+                </div>
+                
+                <div class="test passed">
+                    <div class="test-header">
+                        ✓ List generation
+                        <span class="duration">0ms</span>
+                    </div>
+                    <div class="assertions">
+                    <div class="assertion passed">
+                        <span class="type">contains</span>: Contains '1.'
+                    </div>
+                    
+                    <div class="assertion passed">
+                        <span class="type">contains</span>: Contains '2.'
+                    </div>
+                    </div>
+                </div>
+                
+                <div class="test passed">
+                    <div class="test-header">
+                        ✓ Summary generation
+                        <span class="duration">0ms</span>
+                    </div>
+                    <div class="assertions">
+                    <div class="assertion passed">
+                        <span class="type">contains</span>: Contains 'Summary'
+                    </div>
+                    </div>
+                </div>
+                </div></div>
+
+        <p style="color: var(--muted); text-align: center; margin-top: 2rem; font-size: 0.875rem;">
+            Run ID: a0fd02c746ab | Generated by LLM Regress
+        </p>
+    </div>
+</body>
+</html>

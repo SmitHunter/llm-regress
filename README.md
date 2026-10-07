@@ -11,6 +11,10 @@
 
 Recorded from a real mock-provider run of a copy of `examples/basic.yaml`. Tape: [`docs/hero.tape`](docs/hero.tape). Re-record with `./docs/record-hero.sh`.
 
+![HTML report of that same failing mock run: FAILED, 3 tests, 2 passed, 1 failed because Capital city question does not contain Lyon](docs/html-report.png)
+
+HTML report from `llm-regress run suite.yaml -o report.html` on the same failing mock run. Source: [`docs/html-report.html`](docs/html-report.html). Re-capture with `./docs/record-report.sh`.
+
 LLM Regress helps teams catch prompt regressions before they reach production. Define test suites in YAML, run them locally or in CI, and get clear reports on what changed between model versions, prompt iterations, or configuration changes.
 
 ## Why LLM Regress?
