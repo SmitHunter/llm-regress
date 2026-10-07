@@ -29,13 +29,20 @@ This repo runs its own [prompt regression workflow](https://github.com/SmitHunte
 
 ## Example run
 
-![HTML report of that same failing mock run: FAILED, 3 tests, 2 passed, 1 failed because Capital city question does not contain Lyon](docs/html-report.png)
+<p align="center">
+  <img alt="HTML report of that same failing mock run: FAILED, 3 tests, 2 passed, 1 failed because Capital city question does not contain Lyon" src="docs/html-report.png" width="720">
+</p>
 
-HTML report from `llm-regress run suite.yaml -o report.html` on the same failing mock run (`FAILED`, 3 tests, 2 passed, 1 failed, 14ms, run ID `a0fd02c746ab`). The file includes overall status, counts, duration, per-suite tests, assertion messages, and the run ID. Source: [`docs/html-report.html`](docs/html-report.html). Re-capture with `./docs/record-report.sh`.
+<p align="center"><sub>HTML report of the same failing run (<code>-o report.html</code>) · source: <a href="docs/html-report.html"><code>docs/html-report.html</code></a> · re-capture: <code>./docs/record-report.sh</code></sub></p>
+
+`llm-regress run examples/` (all five bundled suites, mock provider) was 13/13 passed in 47ms (run ID `34f40d131cdd`).
+
+<details>
+<summary><b>Terminal output: passing run</b></summary>
 
 Captured from `llm-regress run examples/basic.yaml` using the mock provider (exit 0):
 
-```
+```text
 ─────────────────────────── LLM Regress Test Results ───────────────────────────
 
 ✓ Basic Examples (3/3 passed, 14ms)
@@ -52,20 +59,14 @@ Captured from `llm-regress run examples/basic.yaml` using the mock provider (exi
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
-`llm-regress run examples/` (all five bundled suites, mock provider) was 13/13 passed in 47ms (run ID `34f40d131cdd`).
+</details>
 
-## Comparing Runs
-
-```bash
-llm-regress run suite.yaml --save-run baseline.json
-# change an assertion or prompt
-llm-regress run suite.yaml --save-run current.json
-llm-regress compare baseline.json current.json
-```
+<details>
+<summary><b>Terminal output: compare after changing Paris → Lyon</b></summary>
 
 Captured after changing `examples/basic.yaml`'s capital-city assertion from `Paris` to `Lyon` (mock still returns `Paris`). `llm-regress compare` printed the following and exited 1:
 
-```
+```text
 ──────────────────────────────── Run Comparison ────────────────────────────────
 
 Baseline: 1307b643adf5
@@ -82,6 +83,17 @@ Basic Examples
 
 The failing run itself (exit 1) was 2/3 passed, 14ms, run ID `26648aaec851`, with `contains: Output does not contain 'Lyon'`.
 
+</details>
+
+### Comparing runs
+
+```bash
+llm-regress run suite.yaml --save-run baseline.json
+# change an assertion or prompt
+llm-regress run suite.yaml --save-run current.json
+llm-regress compare baseline.json current.json
+```
+
 ## Quickstart
 
 The package is not on PyPI yet. Install from this repository:
@@ -90,17 +102,12 @@ The package is not on PyPI yet. Install from this repository:
 git clone https://github.com/SmitHunter/llm-regress.git
 cd llm-regress
 pip install -e .
+# From another project: pip install "llm-regress @ git+https://github.com/SmitHunter/llm-regress.git"
 
 # Optional extras
 pip install -e ".[openai]"      # OpenAI provider
 pip install -e ".[anthropic]"   # Anthropic provider
 pip install -e ".[all]"         # OpenAI, Anthropic, and semantic similarity
-```
-
-From another project:
-
-```bash
-pip install "llm-regress @ git+https://github.com/SmitHunter/llm-regress.git"
 ```
 
 ```bash
@@ -112,7 +119,7 @@ llm-regress run tests/prompts/ --save-run baseline.json
 
 `llm-regress init` creates `tests/prompts/example.yaml` (mock provider, contains / JSON schema / latency assertions). Override the suite provider with `--provider openai` or `--provider anthropic` when you have the extra and an API key.
 
-## Test Suite Format
+## Writing suites
 
 ```yaml
 name: My Test Suite
@@ -145,7 +152,7 @@ tests:
       - math
 ```
 
-## Assertion Types
+### Assertion types
 
 | Type | Description | Configuration |
 |------|-------------|---------------|
@@ -160,7 +167,41 @@ tests:
 
 See `examples/` for suites covering contains, JSON schema, LLM-as-judge, latency/cost budgets, and template variables.
 
-## CLI Reference
+## Use in CI
+
+This repository already runs the workflow above. To copy it into another repo, see [`.github/workflows/llm-regress-action.yaml`](.github/workflows/llm-regress-action.yaml): cache, baseline artifact on `main`, compare on PRs, PR comment, HTML report artifact, fail on regressions.
+
+<details>
+<summary><b>Minimal run-only workflow</b></summary>
+
+```yaml
+# .github/workflows/prompt-tests.yaml
+name: Prompt Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install llm-regress
+        run: pip install "llm-regress @ git+https://github.com/SmitHunter/llm-regress.git"
+      - name: Run prompt tests
+        run: llm-regress run tests/prompts/
+```
+
+</details>
+
+The `CI` workflow in this repo also runs `llm-regress run examples/` from the PR checkout (mock provider).
+
+## Usage
+
+<details>
+<summary><b>CLI reference</b></summary>
 
 ```bash
 llm-regress run <paths>           # Run test suites
@@ -184,96 +225,10 @@ llm-regress init                  # Create example suite
 llmr run tests/                   # Shorthand alias
 ```
 
-## GitHub Actions
+</details>
 
-This repository already runs the workflow above. To copy it into another repo, see [`.github/workflows/llm-regress-action.yaml`](.github/workflows/llm-regress-action.yaml): cache, baseline artifact on `main`, compare on PRs, PR comment, HTML report artifact, fail on regressions.
-
-Minimal run-only job:
-
-```yaml
-# .github/workflows/prompt-tests.yaml
-name: Prompt Tests
-
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install llm-regress
-        run: pip install "llm-regress @ git+https://github.com/SmitHunter/llm-regress.git"
-      - name: Run prompt tests
-        run: llm-regress run tests/prompts/
-```
-
-The `CI` workflow in this repo also runs `llm-regress run examples/` from the PR checkout (mock provider).
-
-## How it works
-
-```mermaid
-graph TD
-    A[YAML Test Suites] --> B[Config Loader]
-    B --> C[Test Runner]
-    C --> D{Provider}
-    D --> E[OpenAI]
-    D --> F[Anthropic]
-    D --> G[Mock]
-    D --> H[Custom...]
-
-    C --> I[Response Cache]
-    C --> J[Assertion Engine]
-
-    J --> K[Exact Match]
-    J --> L[Contains]
-    J --> M[Regex]
-    J --> N[JSON Schema]
-    J --> O[Semantic Similarity]
-    J --> P[LLM Judge]
-    J --> Q[Latency/Cost]
-
-    C --> R[Results]
-    R --> S[Terminal Reporter]
-    R --> T[JSON Reporter]
-    R --> U[HTML Reporter]
-    R --> V[Comparison Engine]
-```
-
-| Module | Description |
-|--------|-------------|
-| `llm_regress.config` | YAML parsing and test suite configuration |
-| `llm_regress.providers` | LLM provider implementations (OpenAI, Anthropic, Mock) |
-| `llm_regress.assertions` | Assertion types and validation logic |
-| `llm_regress.runner` | Concurrent test execution and caching |
-| `llm_regress.compare` | Run comparison and regression detection |
-| `llm_regress.reporters` | Terminal, JSON, and HTML output |
-| `llm_regress.cli` | Command-line interface |
-
-## Extending
-
-```python
-from llm_regress.assertions import Assertion, AssertionResult, AssertionRegistry
-
-class ToxicityAssertion(Assertion):
-    name = "toxicity"
-
-    def evaluate(self, response, config) -> AssertionResult:
-        is_safe = check_toxicity(response.content)
-        return AssertionResult(
-            passed=is_safe,
-            assertion_type=self.name,
-            message="Content is safe" if is_safe else "Toxic content detected",
-        )
-
-AssertionRegistry.register("toxicity", ToxicityAssertion)
-```
-
-Providers use the same registry pattern (`ProviderRegistry.register`). Details: [docs/custom-assertions.md](docs/custom-assertions.md), [docs/custom-providers.md](docs/custom-providers.md).
-
-## Configuration
+<details>
+<summary><b>Configuration</b></summary>
 
 | Variable | Description |
 |----------|-------------|
@@ -294,37 +249,79 @@ provider:
 
 If `model` is omitted, OpenAI uses `gpt-6-luna` and Anthropic uses `claude-haiku-4-5` (the current inexpensive generally available models as of 2026-10-06). Cost estimates use published short-context list prices and are approximate.
 
-## Design Decisions
+</details>
+
+## How it works
+
+```mermaid
+flowchart LR
+    Y[YAML suites] --> R[Async runner]
+    R --> P{Provider<br/>OpenAI · Anthropic · Mock}
+    R --> C[(Response cache)]
+    P --> A[Assertions<br/>exact · contains · regex · JSON schema<br/>similarity · LLM judge · latency/cost]
+    A --> Res[Run results]
+    Res --> Rep[Reporters<br/>terminal · JSON · HTML]
+    Res --> Cmp[compare: exit 1 on regression]
+```
+
+<details>
+<summary><b>Modules</b></summary>
+
+| Module | Description |
+|--------|-------------|
+| `llm_regress.config` | YAML parsing and test suite configuration |
+| `llm_regress.providers` | LLM provider implementations (OpenAI, Anthropic, Mock) |
+| `llm_regress.assertions` | Assertion types and validation logic |
+| `llm_regress.runner` | Concurrent test execution and caching |
+| `llm_regress.compare` | Run comparison and regression detection |
+| `llm_regress.reporters` | Terminal, JSON, and HTML output |
+| `llm_regress.cli` | Command-line interface |
+
+</details>
+
+<details>
+<summary><b>Custom assertions and providers</b></summary>
+
+```python
+from llm_regress.assertions import Assertion, AssertionResult, AssertionRegistry
+
+class ToxicityAssertion(Assertion):
+    name = "toxicity"
+
+    def evaluate(self, response, config) -> AssertionResult:
+        is_safe = check_toxicity(response.content)
+        return AssertionResult(
+            passed=is_safe,
+            assertion_type=self.name,
+            message="Content is safe" if is_safe else "Toxic content detected",
+        )
+
+AssertionRegistry.register("toxicity", ToxicityAssertion)
+```
+
+Providers use the same registry pattern (`ProviderRegistry.register`). Details: [docs/custom-assertions.md](docs/custom-assertions.md), [docs/custom-providers.md](docs/custom-providers.md).
+
+</details>
+
+## Design decisions
 
 - **YAML-first configuration**: Test suites are defined in YAML rather than code because prompts are closer to data than logic. YAML fits version control and code review.
-
 - **Deterministic mock provider**: The mock provider generates responses from prompt content patterns (for example, a France capital question returns `Paris`). That keeps the examples and CI offline. It is not a substitute for a real model.
-
 - **Environment interpolation**: Suite YAML may use `${VAR}` and `${VAR:-default}`. A sole `${VAR}` that is unset becomes `null`, so `api_key: ${OPENAI_API_KEY}` falls back to the provider's own environment lookup instead of sending the literal placeholder.
-
 - **Async-first execution**: All provider calls use async/await with configurable concurrency limits.
-
 - **Pluggable architecture**: Providers and assertions use a registry pattern.
-
 - **Semantic caching**: Response cache keys include the full prompt, model, and relevant parameters.
 
 ## Limitations
 
 - **No streaming response testing**: Currently only supports request/response patterns.
-
 - **Semantic similarity requires extra dependencies**: The `sentence-transformers` library adds ~500MB of dependencies. It's optional but needed for embedding-based assertions.
-
 - **LLM-as-judge reliability**: `llm_judge` calls the suite's provider with a rubric prompt. With a real provider, verdicts can vary between runs. With the mock provider, the judge PASSes when the evaluated output is non-empty — it does not score rubric quality.
-
 - **Not on PyPI yet**: Install from GitHub or a local clone until a release is published.
-
 - **Cost estimation is approximate**: Token counts and costs are estimated from published list prices. Billed cost can differ by tier, caching, and long-context pricing.
-
 - **Single-turn conversations only**: Each test runs a single prompt. Multi-turn conversations and chat history are not currently supported.
 
-## Roadmap
-
-Not started: streaming assertions, multi-turn tests, parametrized cases, and additional providers. No dates attached.
+**Not started:** streaming assertions, multi-turn tests, parametrised cases, additional providers.
 
 ## Contributing
 
