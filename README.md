@@ -1,26 +1,37 @@
-# LLM Regress
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/banner-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/brand/banner-light.svg">
+    <img alt="LLM Regress: regression tests for LLM prompts and models, built for CI" src="docs/brand/banner-light.svg" width="100%">
+  </picture>
+</p>
 
-[![CI](https://github.com/SmitHunter/llm-regress/actions/workflows/ci.yaml/badge.svg)](https://github.com/SmitHunter/llm-regress/actions/workflows/ci.yaml)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<p align="center">
+  <a href="https://github.com/SmitHunter/llm-regress/actions/workflows/ci.yaml"><img alt="CI status" src="https://img.shields.io/github/actions/workflow/status/SmitHunter/llm-regress/ci.yaml?branch=main&label=CI&style=flat"></a>
+  <a href="pyproject.toml"><img alt="Python 3.10+" src="https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat"></a>
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-yellow?style=flat"></a>
+</p>
 
-**Regression testing for LLM prompts and models, designed for CI pipelines.**
+<p align="center"><a href="#example-run">Example run</a> · <a href="#quickstart">Quickstart</a> · <a href="#how-it-works">How it works</a> · <a href="#limitations">Limitations</a></p>
 
-YAML suites, assertions (contains, regex, JSON schema, LLM-as-judge, latency/cost), and `llm-regress compare` to fail CI when a prompt or model change regresses a previously passing test.
+Regression tests for LLM prompts and models. Suites are YAML; assertions cover contains, regex, JSON schema, LLM-as-judge, latency and cost. `llm-regress compare` exits 1 when a previously passing test fails, so a prompt change can fail CI.
 
-![Passing mock-provider run of examples/basic.yaml, then an assertion change (Paris to Lyon) that fails, then llm-regress compare reporting REGRESSIONS DETECTED and exit code 1](docs/hero.gif)
+<p align="center">
+  <img alt="Passing mock-provider run of examples/basic.yaml, then an assertion change (Paris to Lyon) that fails, then llm-regress compare reporting REGRESSIONS DETECTED and exit code 1" src="docs/hero.gif" width="800">
+</p>
 
-Recorded from a real mock-provider run of a copy of `examples/basic.yaml`. Tape: [`docs/hero.tape`](docs/hero.tape). Re-record with `./docs/record-hero.sh`.
+<p align="center"><sub>Real mock-provider run · tape: <a href="docs/hero.tape"><code>docs/hero.tape</code></a> · re-record: <code>./docs/record-hero.sh</code></sub></p>
+
+> [!NOTE]
+> All published output (GIF, HTML report, terminal text) comes from the deterministic mock provider. A real-model case study needs an API key and is not in this repo yet.
+
+This repo runs its own [prompt regression workflow](https://github.com/SmitHunter/llm-regress/actions/workflows/llm-regress-action.yaml) on every PR: baseline on `main`, compare on PRs, PR comment, fail on regressions.
+
+## Example run
 
 ![HTML report of that same failing mock run: FAILED, 3 tests, 2 passed, 1 failed because Capital city question does not contain Lyon](docs/html-report.png)
 
 HTML report from `llm-regress run suite.yaml -o report.html` on the same failing mock run (`FAILED`, 3 tests, 2 passed, 1 failed, 14ms, run ID `a0fd02c746ab`). The file includes overall status, counts, duration, per-suite tests, assertion messages, and the run ID. Source: [`docs/html-report.html`](docs/html-report.html). Re-capture with `./docs/record-report.sh`.
-
-**All published terminal output, the hero GIF, and the HTML report come from the mock provider.** A real-model case study (two models or two prompt versions, with latency and cost) needs an API key and is not in this repo yet.
-
-This repo runs its own prompt regression workflow in CI: [Prompt Regression Tests](https://github.com/SmitHunter/llm-regress/actions/workflows/llm-regress-action.yaml) ([workflow file](.github/workflows/llm-regress-action.yaml)). On push to `main` it saves a baseline artifact from `examples/`; on pull requests it compares the current run against that baseline, comments on the PR, and fails if regressions are found.
-
-## Example Output
 
 Captured from `llm-regress run examples/basic.yaml` using the mock provider (exit 0):
 
@@ -71,7 +82,7 @@ Basic Examples
 
 The failing run itself (exit 1) was 2/3 passed, 14ms, run ID `26648aaec851`, with `contains: Output does not contain 'Lyon'`.
 
-## Quick Start
+## Quickstart
 
 The package is not on PyPI yet. Install from this repository:
 
@@ -201,7 +212,7 @@ jobs:
 
 The `CI` workflow in this repo also runs `llm-regress run examples/` from the PR checkout (mock provider).
 
-## Architecture
+## How it works
 
 ```mermaid
 graph TD
