@@ -20,7 +20,7 @@ Regression tests for LLM prompts and models. Suites are YAML; assertions cover c
   <img alt="Passing mock-provider run of examples/basic.yaml, then an assertion change (Paris to Lyon) that fails, then llm-regress compare reporting REGRESSIONS DETECTED and exit code 1" src="docs/hero.gif" width="800">
 </p>
 
-<p align="center"><sub>Real mock-provider run · tape: <a href="docs/hero.tape"><code>docs/hero.tape</code></a> · re-record: <code>./docs/record-hero.sh</code></sub></p>
+<p align="center"><sub>Real mock-provider run · tape: <a href="docs/hero.tape"><code>docs/hero.tape</code></a> · re-record: <code>./docs/record-hero.sh</code> (also writes the matching HTML report from the failing <code>--save-run</code>)</sub></p>
 
 > [!NOTE]
 > All published output (GIF, HTML report, terminal text) comes from the deterministic mock provider. A real-model case study needs an API key and is not in this repo yet.
@@ -33,20 +33,20 @@ This repo runs its own [prompt regression workflow](https://github.com/SmitHunte
   <img alt="HTML report of that same failing mock run: FAILED, 3 tests, 2 passed, 1 failed because Capital city question does not contain Lyon" src="docs/html-report.png" width="720">
 </p>
 
-<p align="center"><sub>HTML report of the same failing run (<code>-o report.html</code>) · source: <a href="docs/html-report.html"><code>docs/html-report.html</code></a> · re-capture: <code>./docs/record-report.sh</code></sub></p>
+<p align="center"><sub>HTML report of the same failing run (run ID <code>6648e5bb6280</code>, 15ms) · source: <a href="docs/html-report.html"><code>docs/html-report.html</code></a> · re-capture: <code>./docs/record-report.sh</code> (uses the hero failing run when present)</sub></p>
 
-`llm-regress run examples/` (all five bundled suites, mock provider) was 13/13 passed in 47ms (run ID `34f40d131cdd`).
+`llm-regress run examples/` (all five bundled suites, mock provider) was 13/13 passed in 51ms (run ID `8d0149eb620b`).
 
 <details>
 <summary><b>Terminal output: passing run</b></summary>
 
-Captured from `llm-regress run examples/basic.yaml` using the mock provider (exit 0):
+Captured from the passing mock-provider run in the GIF above (a copy of `examples/basic.yaml`, exit 0):
 
 ```text
 ─────────────────────────── LLM Regress Test Results ───────────────────────────
 
-✓ Basic Examples (3/3 passed, 14ms)
-  ✓ Capital city question [13ms]
+✓ Basic Examples (3/3 passed, 32ms)
+  ✓ Capital city question [32ms]
   ✓ List generation [0ms]
   ✓ Summary generation [0ms]
 
@@ -54,8 +54,8 @@ Captured from `llm-regress run examples/basic.yaml` using the mock provider (exi
 │   Total Tests    3                                                           │
 │   Passed         3                                                           │
 │   Failed         0                                                           │
-│   Duration       14ms                                                        │
-│   Run ID         1307b643adf5                                                │
+│   Duration       32ms                                                        │
+│   Run ID         fbecac74c60d                                                │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
@@ -64,13 +64,13 @@ Captured from `llm-regress run examples/basic.yaml` using the mock provider (exi
 <details>
 <summary><b>Terminal output: compare after changing Paris → Lyon</b></summary>
 
-Captured after changing `examples/basic.yaml`'s capital-city assertion from `Paris` to `Lyon` (mock still returns `Paris`). `llm-regress compare` printed the following and exited 1:
+Captured after changing that copy's capital-city assertion from `Paris` to `Lyon` (mock still returns `Paris`). `llm-regress compare` printed the following and exited 1:
 
 ```text
 ──────────────────────────────── Run Comparison ────────────────────────────────
 
-Baseline: 1307b643adf5
-Current:  26648aaec851
+Baseline: fbecac74c60d
+Current:  6648e5bb6280
 
 Basic Examples
   ↓ Capital city question [regressed]
@@ -81,7 +81,7 @@ Basic Examples
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
-The failing run itself (exit 1) was 2/3 passed, 14ms, run ID `26648aaec851`, with `contains: Output does not contain 'Lyon'`.
+The failing run itself (exit 1) was 2/3 passed, 15ms, run ID `6648e5bb6280`, with `contains: Output does not contain 'Lyon'`.
 
 </details>
 
@@ -101,6 +101,8 @@ The package is not on PyPI yet. Install from this repository:
 ```bash
 git clone https://github.com/SmitHunter/llm-regress.git
 cd llm-regress
+python3 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -e .
 # From another project: pip install "llm-regress @ git+https://github.com/SmitHunter/llm-regress.git"
 
@@ -310,7 +312,7 @@ Providers use the same registry pattern (`ProviderRegistry.register`). Details: 
 - **Environment interpolation**: Suite YAML may use `${VAR}` and `${VAR:-default}`. A sole `${VAR}` that is unset becomes `null`, so `api_key: ${OPENAI_API_KEY}` falls back to the provider's own environment lookup instead of sending the literal placeholder.
 - **Async-first execution**: All provider calls use async/await with configurable concurrency limits.
 - **Pluggable architecture**: Providers and assertions use a registry pattern.
-- **Semantic caching**: Response cache keys include the full prompt, model, and relevant parameters.
+- **Exact-match response caching**: Response cache keys include the full prompt, model, and relevant parameters.
 
 ## Limitations
 
