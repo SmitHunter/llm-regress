@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Record docs/hero.gif from a real mock-provider run via VHS (docs/hero.tape).
+# After recording, render the matching HTML report from the failing --save-run
+# JSON so the GIF, HTML, and screenshot share one run ID.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -17,3 +19,10 @@ fi
 
 rm -rf /tmp/llm-regress-demo
 vhs docs/hero.tape
+
+if [[ -f /tmp/llm-regress-demo/current.json ]]; then
+  echo "Failing run saved at /tmp/llm-regress-demo/current.json"
+  "$ROOT/docs/record-report.sh" /tmp/llm-regress-demo/current.json
+else
+  echo "Warning: /tmp/llm-regress-demo/current.json missing; HTML report not updated." >&2
+fi
